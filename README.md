@@ -27,7 +27,7 @@ ttf2woff2/
 ```
 
 `ttf2woff2.py` is the application entry point. The existing
-`ttf2woff2_gui.exe` file is a local packaged build artifact and is ignored by
+`ttf2woff2_gui.exe` file is a local packaged build artefact and is ignored by
 Git.
 
 ## Dependencies
@@ -61,7 +61,7 @@ python -m py_compile ttf2woff2.py
 ## Git Ignore
 
 The `.gitignore` excludes Python caches, virtual environments, package build
-outputs, coverage artifacts, editor folders, OS metadata, local `.exe` builds,
+outputs, coverage artefacts, editor folders, OS metadata, local `.exe` builds,
 generated `.woff2` files, and logs.
 
 ## Licence
