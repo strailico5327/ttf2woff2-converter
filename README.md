@@ -22,11 +22,11 @@ ttf2woff2/
   LICENSE
   README.md
   requirements.txt
-  ttf2woff2.py
+  ttf2woff2_converter.py
   ttf2woff2_gui.spec
 ```
 
-`ttf2woff2.py` is the application entry point. The existing
+`ttf2woff2_converter.py` is the application entry point. The existing
 `ttf2woff2_gui.exe` file is a local packaged build artefact and is ignored by
 Git.
 
@@ -47,7 +47,7 @@ python -m pip install -r requirements.txt
 Run from the repository root:
 
 ```powershell
-python ttf2woff2.py
+python ttf2woff2_converter.py
 ```
 
 ## Checks
@@ -55,7 +55,7 @@ python ttf2woff2.py
 Check that the script parses correctly:
 
 ```powershell
-python -m py_compile ttf2woff2.py
+python -m py_compile ttf2woff2_converter.py
 ```
 
 ## Git Ignore

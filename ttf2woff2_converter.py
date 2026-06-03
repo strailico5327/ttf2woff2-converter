@@ -1,3 +1,5 @@
+"""Desktop GUI for converting TTF fonts to WOFF2."""
+
 import sys
 import ctypes
 from pathlib import Path
@@ -29,8 +31,9 @@ APP_TITLE = "TTF to WOFF2 Converter"
 ABOUT_TEXT = """TTF to WOFF2 Converter
 © 2026 strailico5327
 
-Licensed under GNU GPLv3.
-Developed with assistance from OpenAI Codex."""
+Convert TTF fonts to WOFF2 with a simple GUI.
+
+Licensed under GNU GPLv3."""
 
 
 def enable_windows_high_dpi_awareness() -> None:
@@ -294,8 +297,14 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(
             """
             QWidget {
+                background: palette(window);
+                color: palette(window-text);
                 font-family: "Segoe UI";
                 font-size: 10.5pt;
+            }
+
+            QLabel {
+                background: transparent;
             }
 
             QLabel#titleLabel {
@@ -304,7 +313,7 @@ class MainWindow(QMainWindow):
             }
 
             QLabel#hintLabel {
-                color: #444;
+                color: palette(text);
             }
 
             QLabel#queueLabel {
@@ -312,24 +321,24 @@ class MainWindow(QMainWindow):
             }
 
             QFrame#dropArea {
-                border: 2px dashed #999;
+                border: 2px dashed palette(mid);
                 border-radius: 12px;
-                background: #fafafa;
+                background: palette(base);
             }
 
             QFrame#dropArea[dragging="true"] {
-                border: 2px dashed #2b7cff;
-                background: #eef5ff;
+                border: 2px dashed palette(highlight);
+                background: palette(alternate-base);
             }
 
             QLabel#dropLabel {
                 font-size: 18pt;
                 font-weight: 600;
-                color: #222;
+                color: palette(text);
             }
 
             QLabel#dropSubLabel {
-                color: #666;
+                color: palette(text);
             }
 
             QListWidget#queueList {
