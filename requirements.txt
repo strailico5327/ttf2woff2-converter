@@ -1,0 +1,2 @@
+fonttools
+PySide6
