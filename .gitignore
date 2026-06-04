@@ -14,6 +14,9 @@ ENV/
 .packaging-venv/
 build/
 build_resources/
+build_support/icon_check/
+build_support/pyinstaller-build/
+build_support/version_info.txt
 dist/
 release/
 *.egg-info/
@@ -30,7 +33,11 @@ htmlcov/
 .vscode/
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Generated font output and logs
 *.woff2
 *.log
+
+# Local PyInstaller version metadata
+/version_info.txt

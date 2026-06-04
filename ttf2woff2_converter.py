@@ -7,7 +7,7 @@ from pathlib import Path
 from fontTools.ttLib import TTFont
 
 from PySide6.QtCore import QObject, QThread, Qt, Signal
-from PySide6.QtGui import QDragEnterEvent, QDropEvent
+from PySide6.QtGui import QDragEnterEvent, QDropEvent, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -28,12 +28,18 @@ from PySide6.QtWidgets import (
 
 
 APP_TITLE = "TTF to WOFF2 Converter"
+APP_ICON = "assets/ttf2woff2-converter.ico"
 ABOUT_TEXT = """TTF to WOFF2 Converter
 © 2026 strailico5327
 
-Convert TTF fonts to WOFF2 with a simple GUI.
+Convert TTF fonts to WOFF2.
 
 Licensed under GNU GPLv3."""
+
+
+def resource_path(relative_path: str) -> Path:
+    base_path = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+    return base_path / relative_path
 
 
 def enable_windows_high_dpi_awareness() -> None:
@@ -580,8 +586,13 @@ def main() -> None:
 
     app = QApplication(sys.argv)
     app.setApplicationName(APP_TITLE)
+    app_icon = QIcon(str(resource_path(APP_ICON)))
+    if not app_icon.isNull():
+        app.setWindowIcon(app_icon)
 
     window = MainWindow()
+    if not app_icon.isNull():
+        window.setWindowIcon(app_icon)
     window.show()
 
     sys.exit(app.exec())
