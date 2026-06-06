@@ -34,6 +34,12 @@ const state = {
   selectedKeys: new Set(),
   results: [],
   running: false,
+  previewRequestId: 0,
+  previewFont: {
+    key: null,
+    face: null,
+    url: null,
+  },
 };
 
 const elements = {
@@ -45,29 +51,34 @@ const elements = {
   clearQueueButton: document.querySelector('#clearQueueButton'),
   convertButton: document.querySelector('#convertButton'),
   downloadAllButton: document.querySelector('#downloadAllButton'),
+  downloadLabel: document.querySelector('#downloadLabel'),
   dropZone: document.querySelector('#dropZone'),
   fileInput: document.querySelector('#fileInput'),
   folderInput: document.querySelector('#folderInput'),
+  fontPreview: document.querySelector('#fontPreview'),
   logBox: document.querySelector('#logBox'),
+  previewMeta: document.querySelector('#previewMeta'),
+  previewTitle: document.querySelector('#previewTitle'),
   queueCount: document.querySelector('#queueCount'),
   queueList: document.querySelector('#queueList'),
   removeSelectedButton: document.querySelector('#removeSelectedButton'),
-  resultsList: document.querySelector('#resultsList'),
 };
 
 createIcons({ icons });
 log('Ready. Add .ttf files to the queue, then start conversion.');
 render();
 
-elements.aboutButton.addEventListener('click', () => {
+elements.aboutButton?.addEventListener('click', () => {
   elements.aboutDialog.showModal();
 });
 
-elements.addFilesButton.addEventListener('click', () => {
+elements.addFilesButton.addEventListener('click', (event) => {
+  event.stopPropagation();
   elements.fileInput.click();
 });
 
-elements.addFolderButton.addEventListener('click', () => {
+elements.addFolderButton.addEventListener('click', (event) => {
+  event.stopPropagation();
   elements.folderInput.click();
 });
 
@@ -170,6 +181,7 @@ function addFiles(files) {
       file,
       key,
       path: file.webkitRelativePath || file.name,
+      status: 'Queued',
     });
     addedCount += 1;
   });
@@ -198,6 +210,8 @@ async function convertQueue() {
 
   for (const item of state.queue) {
     try {
+      item.status = 'Converting';
+      renderQueue();
       const source = new Uint8Array(await item.file.arrayBuffer());
       const output = await compress(source);
       const outputName = item.file.name.replace(/\.ttf$/i, '.woff2');
@@ -209,11 +223,14 @@ async function convertQueue() {
 
       state.results.push(result);
       successCount += 1;
+      item.status = 'Done';
       log(`Done: ${item.file.name} -> ${outputName}`);
-      renderResults();
+      renderQueue();
     } catch (error) {
       failedCount += 1;
+      item.status = 'Failed';
       log(`Failed: ${item.file.name} | ${error.message || error}`);
+      renderQueue();
     }
   }
 
@@ -230,10 +247,11 @@ function render() {
   elements.removeSelectedButton.disabled = state.running || state.selectedKeys.size === 0;
   elements.addFilesButton.disabled = state.running;
   elements.addFolderButton.disabled = state.running;
+  elements.downloadLabel.textContent = downloadButtonText();
 
   elements.queueCount.textContent = `${state.queue.length} ${state.queue.length === 1 ? 'file' : 'files'}`;
   renderQueue();
-  renderResults();
+  void updateFontPreview();
 }
 
 function renderQueue() {
@@ -265,52 +283,102 @@ function renderQueue() {
     name.className = 'file-name';
     name.textContent = item.path;
 
+    const status = document.createElement('span');
+    status.className = `queue-status ${statusClass(item.status)}`;
+    status.textContent = item.status || 'Queued';
+
     const size = document.createElement('span');
     size.className = 'file-size';
     size.textContent = formatBytes(item.file.size);
 
-    row.append(checkbox, name, size);
+    row.append(checkbox, name, status, size);
     elements.queueList.append(row);
   });
 }
 
-function renderResults() {
-  elements.downloadAllButton.disabled = state.results.length === 0;
+function previewQueueItem() {
+  return state.queue.find((item) => state.selectedKeys.has(item.key)) || state.queue[0] || null;
+}
 
-  if (state.results.length === 0) {
-    elements.resultsList.innerHTML = '<div class="empty-state">No output yet</div>';
+function disposePreviewFont() {
+  if (state.previewFont.face) {
+    document.fonts.delete(state.previewFont.face);
+  }
+  if (state.previewFont.url) {
+    URL.revokeObjectURL(state.previewFont.url);
+  }
+  state.previewFont = {
+    key: null,
+    face: null,
+    url: null,
+  };
+}
+
+function clearFontPreview(title = 'No font selected', meta = 'Add a TTF file to preview it') {
+  state.previewRequestId += 1;
+  disposePreviewFont();
+  elements.fontPreview.classList.add('is-empty');
+  elements.fontPreview.style.fontFamily = '';
+  elements.fontPreview.textContent = 'Aa';
+  elements.previewTitle.textContent = title;
+  elements.previewMeta.textContent = meta;
+}
+
+async function updateFontPreview() {
+  if (!('FontFace' in window)) {
+    clearFontPreview('Preview unavailable', 'This browser does not support FontFace preview.');
     return;
   }
 
-  elements.resultsList.innerHTML = '';
+  const item = previewQueueItem();
+  if (!item) {
+    clearFontPreview();
+    return;
+  }
 
-  state.results.forEach((result) => {
-    const row = document.createElement('div');
-    row.className = 'result-row';
+  if (state.previewFont.key === item.key) {
+    elements.previewMeta.textContent = item.path;
+    return;
+  }
 
-    const name = document.createElement('span');
-    name.className = 'file-name';
-    name.textContent = result.path;
+  const requestId = state.previewRequestId + 1;
+  state.previewRequestId = requestId;
+  elements.fontPreview.classList.add('is-empty');
+  elements.previewTitle.textContent = 'Loading preview';
+  elements.previewMeta.textContent = item.path;
 
-    const size = document.createElement('span');
-    size.className = 'file-size';
-    size.textContent = formatBytes(result.blob.size);
+  const family = `TTFPreview-${requestId}`;
+  const url = URL.createObjectURL(item.file);
+  const face = new FontFace(family, `url(${url})`);
 
-    const button = document.createElement('button');
-    button.className = 'icon-button';
-    button.type = 'button';
-    button.title = 'Download';
-    button.setAttribute('aria-label', `Download ${result.name}`);
-    button.innerHTML = '<i data-lucide="download"></i>';
-    button.addEventListener('click', () => {
-      downloadBlob(result.blob, result.name);
-    });
+  try {
+    await face.load();
+    if (state.previewRequestId !== requestId) {
+      URL.revokeObjectURL(url);
+      return;
+    }
 
-    row.append(name, size, button);
-    elements.resultsList.append(row);
-  });
+    disposePreviewFont();
+    document.fonts.add(face);
+    state.previewFont = {
+      key: item.key,
+      face,
+      url,
+    };
+    elements.fontPreview.classList.remove('is-empty');
+    elements.fontPreview.style.fontFamily = `"${family}", "Segoe UI", sans-serif`;
+    elements.fontPreview.textContent = 'Aa';
+    elements.previewTitle.textContent = 'Font preview';
+    elements.previewMeta.textContent = item.path;
+  } catch (error) {
+    if (state.previewRequestId !== requestId) {
+      URL.revokeObjectURL(url);
+      return;
+    }
 
-  createIcons({ icons });
+    URL.revokeObjectURL(url);
+    clearFontPreview('Preview unavailable', error.message || 'The selected font could not be previewed.');
+  }
 }
 
 function downloadAllResults() {
@@ -332,6 +400,12 @@ function downloadAllResults() {
     const blob = new Blob([zipped], { type: 'application/zip' });
     downloadBlob(blob, 'woff2-fonts.zip');
   });
+}
+
+function downloadButtonText() {
+  if (state.results.length === 1) return 'Download file';
+  if (state.results.length > 1) return 'Download archive';
+  return 'Download';
 }
 
 async function getCompress() {
@@ -413,6 +487,13 @@ function formatBytes(bytes) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+function statusClass(status) {
+  if (status === 'Done') return 'is-done';
+  if (status === 'Failed') return 'is-failed';
+  if (status === 'Converting') return 'is-running';
+  return '';
 }
 
 function log(message) {

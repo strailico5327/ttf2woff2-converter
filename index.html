@@ -3,88 +3,101 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#d3483a" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/7-necomini-red_32x.png" />
+    <link rel="icon" type="image/png" sizes="128x128" href="./assets/7-necomini-red_128x.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./assets/7-necomini-red_192x.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/7-necomini-red_180x.png" />
     <title>TTF to WOFF2 Converter</title>
   </head>
   <body>
     <main class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <img class="brand-icon" src="./assets/7-necomini-red_192x.png" alt="" />
+          <h1 id="app-title">TTF to WOFF2 Converter</h1>
+        </div>
+      </header>
+
       <section class="workspace" aria-labelledby="app-title">
-        <header class="topbar">
-          <div>
-            <h1 id="app-title">TTF to WOFF2 Converter</h1>
-            <p>Convert fonts locally in your browser. Files are never uploaded.</p>
+        <section class="drop-panel" aria-labelledby="dropTitle">
+          <div class="drop-zone" id="dropZone" role="button" tabindex="0">
+            <input id="fileInput" type="file" accept=".ttf,font/ttf" multiple />
+            <input id="folderInput" type="file" accept=".ttf,font/ttf" multiple webkitdirectory />
+            <div class="drop-copy">
+              <span class="drop-symbol" aria-hidden="true">+</span>
+              <h2 id="dropTitle">Drop TTF files</h2>
+              <p>Choose files, add a folder, or drop fonts here. Conversion runs locally.</p>
+              <div class="drop-actions" aria-label="File actions">
+                <button id="addFilesButton" class="secondary-button" type="button">
+                  <i data-lucide="file-plus-2"></i>
+                  <span>Add files</span>
+                </button>
+                <button id="addFolderButton" class="secondary-button" type="button">
+                  <i data-lucide="folder-plus"></i>
+                  <span>Add folder</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <button class="icon-button" id="aboutButton" type="button" title="About" aria-label="About">
-            <i data-lucide="info"></i>
-          </button>
-        </header>
 
-        <div class="drop-zone" id="dropZone" role="button" tabindex="0">
-          <input id="fileInput" type="file" accept=".ttf,font/ttf" multiple />
-          <input id="folderInput" type="file" accept=".ttf,font/ttf" multiple webkitdirectory />
-          <div class="drop-copy">
-            <i data-lucide="upload-cloud"></i>
-            <strong>Drop .ttf files here</strong>
-            <span>Or add files and folders with the buttons below</span>
+          <div class="preview-panel" aria-label="Font preview">
+            <div class="font-preview is-empty" id="fontPreview" aria-hidden="true">Aa</div>
+            <strong id="previewTitle">No font selected</strong>
+            <span id="previewMeta">Add a TTF file to preview it</span>
           </div>
-        </div>
+        </section>
 
-        <div class="toolbar" aria-label="File actions">
-          <button id="addFilesButton" type="button">
-            <i data-lucide="file-plus-2"></i>
-            <span>Add files</span>
-          </button>
-          <button id="addFolderButton" type="button">
-            <i data-lucide="folder-plus"></i>
-            <span>Add folder</span>
-          </button>
-          <span class="toolbar-spacer"></span>
-          <button id="removeSelectedButton" type="button">
-            <i data-lucide="list-minus"></i>
-            <span>Remove selected</span>
-          </button>
-          <button id="clearQueueButton" type="button">
-            <i data-lucide="trash-2"></i>
-            <span>Clear</span>
-          </button>
-        </div>
+        <section class="controls-panel" aria-label="Conversion controls">
+          <div class="action-row">
+            <button class="primary-button" id="convertButton" type="button" disabled>
+              <i data-lucide="play"></i>
+              <span>Start conversion</span>
+            </button>
+            <button class="secondary-button" id="downloadAllButton" type="button" disabled>
+              <i data-lucide="archive"></i>
+              <span id="downloadLabel">Download</span>
+            </button>
+          </div>
+        </section>
 
         <section class="queue-panel" aria-labelledby="queueTitle">
-          <div class="panel-head">
-            <h2 id="queueTitle">Queue</h2>
-            <span id="queueCount">0 files</span>
+          <div class="queue-head">
+            <div>
+              <h2 id="queueTitle">Conversion Queue</h2>
+              <p id="queueCount">0 files</p>
+            </div>
+            <div class="queue-actions">
+              <button id="removeSelectedButton" class="secondary-button" type="button">
+                <i data-lucide="list-minus"></i>
+                <span>Remove selected</span>
+              </button>
+              <button id="clearQueueButton" class="secondary-button" type="button">
+                <i data-lucide="trash-2"></i>
+                <span>Clear queue</span>
+              </button>
+            </div>
           </div>
           <div class="queue-list" id="queueList" aria-live="polite"></div>
-        </section>
 
-        <div class="runbar">
-          <button class="primary-button" id="convertButton" type="button" disabled>
-            <i data-lucide="play"></i>
-            <span>Start conversion</span>
-          </button>
-        </div>
-
-        <section class="results-panel" aria-labelledby="resultsTitle">
-          <div class="panel-head">
-            <h2 id="resultsTitle">Results</h2>
-            <button class="ghost-button" id="downloadAllButton" type="button" disabled>
-              <i data-lucide="archive"></i>
-              <span>Download ZIP</span>
-            </button>
-          </div>
-          <div class="results-list" id="resultsList" aria-live="polite"></div>
-        </section>
-
-        <section class="log-panel" aria-labelledby="logTitle">
-          <div class="panel-head">
-            <h2 id="logTitle">Log</h2>
-            <button class="ghost-button" id="clearLogButton" type="button">
-              <i data-lucide="eraser"></i>
-              <span>Clear log</span>
-            </button>
-          </div>
-          <pre id="logBox"></pre>
+          <section class="log-panel" aria-labelledby="logTitle">
+            <div class="panel-head">
+              <h2 id="logTitle">Log</h2>
+              <button class="secondary-button" id="clearLogButton" type="button">
+                <i data-lucide="eraser"></i>
+                <span>Clear log</span>
+              </button>
+            </div>
+            <pre id="logBox"></pre>
+          </section>
         </section>
       </section>
+
+      <footer class="legal">
+        <span>Copyright (C) 2026 strailico5327</span>
+        <span>GNU GPLv3. This program comes with no warranty.</span>
+        <span>Files are processed locally in your browser.</span>
+      </footer>
     </main>
 
     <dialog id="aboutDialog">
