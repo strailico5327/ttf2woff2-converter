@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TTF to WOFF2 Converter</title>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-labelledby="app-title">
+        <header class="topbar">
+          <div>
+            <h1 id="app-title">TTF to WOFF2 Converter</h1>
+            <p>Convert fonts locally in your browser. Files are never uploaded.</p>
+          </div>
+          <button class="icon-button" id="aboutButton" type="button" title="About" aria-label="About">
+            <i data-lucide="info"></i>
+          </button>
+        </header>
+
+        <div class="drop-zone" id="dropZone" role="button" tabindex="0">
+          <input id="fileInput" type="file" accept=".ttf,font/ttf" multiple />
+          <input id="folderInput" type="file" accept=".ttf,font/ttf" multiple webkitdirectory />
+          <div class="drop-copy">
+            <i data-lucide="upload-cloud"></i>
+            <strong>Drop .ttf files here</strong>
+            <span>Or add files and folders with the buttons below</span>
+          </div>
+        </div>
+
+        <div class="toolbar" aria-label="File actions">
+          <button id="addFilesButton" type="button">
+            <i data-lucide="file-plus-2"></i>
+            <span>Add files</span>
+          </button>
+          <button id="addFolderButton" type="button">
+            <i data-lucide="folder-plus"></i>
+            <span>Add folder</span>
+          </button>
+          <span class="toolbar-spacer"></span>
+          <button id="removeSelectedButton" type="button">
+            <i data-lucide="list-minus"></i>
+            <span>Remove selected</span>
+          </button>
+          <button id="clearQueueButton" type="button">
+            <i data-lucide="trash-2"></i>
+            <span>Clear</span>
+          </button>
+        </div>
+
+        <section class="queue-panel" aria-labelledby="queueTitle">
+          <div class="panel-head">
+            <h2 id="queueTitle">Queue</h2>
+            <span id="queueCount">0 files</span>
+          </div>
+          <div class="queue-list" id="queueList" aria-live="polite"></div>
+        </section>
+
+        <div class="runbar">
+          <button class="primary-button" id="convertButton" type="button" disabled>
+            <i data-lucide="play"></i>
+            <span>Start conversion</span>
+          </button>
+        </div>
+
+        <section class="results-panel" aria-labelledby="resultsTitle">
+          <div class="panel-head">
+            <h2 id="resultsTitle">Results</h2>
+            <button class="ghost-button" id="downloadAllButton" type="button" disabled>
+              <i data-lucide="archive"></i>
+              <span>Download ZIP</span>
+            </button>
+          </div>
+          <div class="results-list" id="resultsList" aria-live="polite"></div>
+        </section>
+
+        <section class="log-panel" aria-labelledby="logTitle">
+          <div class="panel-head">
+            <h2 id="logTitle">Log</h2>
+            <button class="ghost-button" id="clearLogButton" type="button">
+              <i data-lucide="eraser"></i>
+              <span>Clear log</span>
+            </button>
+          </div>
+          <pre id="logBox"></pre>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="aboutDialog">
+      <form method="dialog" class="dialog-body">
+        <h2>TTF to WOFF2 Converter</h2>
+        <p>Copyright (C) 2026 strailico5327</p>
+        <p>Licensed under GNU GPLv3.</p>
+        <button class="primary-button" value="close" type="submit">Close</button>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

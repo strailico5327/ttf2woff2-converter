@@ -1,75 +1,60 @@
-# TTF to WOFF2 Converter
+# TTF to WOFF2 Converter Web
 
-TTF to WOFF2 Converter is a small desktop Python GUI for converting `.ttf` font
-files to `.woff2` files.
+A pure frontend tool for converting `.ttf` font files to `.woff2` in the browser.
+Files are processed locally and are not uploaded to a server.
 
 ## Features
 
-- Add individual `.ttf` files with a file picker.
-- Add all `.ttf` files from a selected folder.
-- Drag `.ttf` files or folders into the drop area.
-- Keep a visible queue of files before conversion.
-- Remove selected files or clear the queue.
-- Optionally overwrite existing `.woff2` files.
-- Convert in a background thread so the window stays responsive.
-- Show progress and conversion results in the log panel.
+- Add individual `.ttf` files.
+- Add every `.ttf` file from a folder.
+- Drag files or folders into the drop area.
+- Review and remove queued files before conversion.
+- Convert fonts with WebAssembly in the browser.
+- Download each `.woff2` file or download all results as a ZIP archive.
 
-## Repository Layout
+## Requirements
 
-```text
-ttf2woff2/
-  .gitignore
-  LICENSE
-  README.md
-  requirements.txt
-  ttf2woff2_converter.py
-  ttf2woff2_gui.spec
-```
+- Node.js 18 or newer
+- npm
 
-`ttf2woff2_converter.py` is the application entry point. The existing
-`ttf2woff2_gui.exe` file is a local packaged build artefact and is ignored by
-Git.
-
-## Dependencies
-
-- Python 3.10 or newer
-- fonttools
-- PySide6
-
-Install dependencies into the same Python environment used to run the app:
+## Install
 
 ```powershell
-python -m pip install -r requirements.txt
+npm install
 ```
 
-## Run
-
-Run from the repository root:
+## Development
 
 ```powershell
-python ttf2woff2_converter.py
+npm run dev
 ```
 
-## Checks
+The Vite development server binds to `127.0.0.1` by default.
 
-Check that the script parses correctly:
+## Build
 
 ```powershell
-python -m py_compile ttf2woff2_converter.py
+npm run build
 ```
 
-## Git Ignore
+The static site is generated in `dist/`. Upload the contents of `dist/` to any
+static host, or publish the project source to GitHub and configure your own
+deployment workflow.
 
-The `.gitignore` excludes Python caches, virtual environments, package build
-outputs, coverage artefacts, editor folders, OS metadata, local `.exe` builds,
-generated `.woff2` files, and logs.
+## Preview Production Build
 
-## Licence
+```powershell
+npm run preview
+```
 
-This project is licensed under the GNU General Public License v3.0.
+## Privacy
+
+The converter runs entirely in the browser. Font files stay on your device unless
+you choose to upload or share them somewhere else.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0. See
+[`LICENSE`](LICENSE) for details.
 
 Copyright (C) 2026 strailico5327.
-
-## Notes
-
-This project was developed with assistance from OpenAI Codex. The code has been reviewed and tested before release.

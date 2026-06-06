@@ -1,43 +1,37 @@
-# Python bytecode and caches
-__pycache__/
-*.py[cod]
-*$py.class
+# Dependencies
+node_modules/
 
-# Virtual environments
-.venv/
-.venv*/
-venv/
-env/
-ENV/
-
-# Packaging and build output
-.packaging-venv/
-build/
-build_resources/
-build_support/icon_check/
-build_support/pyinstaller-build/
-build_support/version_info.txt
+# Build output
 dist/
-release/
-*.egg-info/
-*.exe
-*.spec
+.vite/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Test and coverage output
-.pytest_cache/
-.coverage
-htmlcov/
+coverage/
+.nyc_output/
 
-# Local editor and OS files
+# Editor and OS files
 .idea/
 .vscode/
+*.swp
+*.swo
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Generated font output and logs
-*.woff2
-*.log
+# Temporary files
+tmp/
+temp/
+*.tmp
 
-# Local PyInstaller version metadata
-/version_info.txt
