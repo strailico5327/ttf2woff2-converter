@@ -27,6 +27,7 @@ const icons = {
 };
 
 let compressLoader;
+const PREVIEW_TEXT = 'A quick fox jumps over a lazy dog.';
 
 const state = {
   queue: [],
@@ -319,7 +320,7 @@ function clearFontPreview(title = 'No font selected', meta = 'Add a TTF file to 
   disposePreviewFont();
   elements.fontPreview.classList.add('is-empty');
   elements.fontPreview.style.fontFamily = '';
-  elements.fontPreview.textContent = 'Aa';
+  elements.fontPreview.textContent = PREVIEW_TEXT;
   elements.previewTitle.textContent = title;
   elements.previewMeta.textContent = meta;
 }
@@ -367,7 +368,7 @@ async function updateFontPreview() {
     };
     elements.fontPreview.classList.remove('is-empty');
     elements.fontPreview.style.fontFamily = `"${family}", "Segoe UI", sans-serif`;
-    elements.fontPreview.textContent = 'Aa';
+    elements.fontPreview.textContent = PREVIEW_TEXT;
     elements.previewTitle.textContent = 'Font preview';
     elements.previewMeta.textContent = item.path;
   } catch (error) {

@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --bg: #f6f7f5;
   --panel: #ffffff;
   --panel-soft: #fbfcfd;
@@ -11,9 +11,44 @@
   --accent-dark: #aa3328;
   --accent-soft: #fff0ee;
   --ok: #177245;
+  --body-overlay-start: rgba(255, 255, 255, 0.7);
+  --body-overlay-end: rgba(246, 247, 245, 0.94);
+  --button-hover: #fff7f6;
+  --checker-mark: #edf1f5;
+  --checker-base: #ffffff;
+  --empty-preview: #aeb8c2;
+  --row-bg: #ffffff;
+  --done-bg: #e9f7ef;
+  --failed-bg: #fff0ee;
   --shadow: 0 18px 45px rgba(30, 41, 59, 0.09);
   font-family:
     Inter, "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101316;
+    --panel: #181d22;
+    --panel-soft: #20262c;
+    --text: #eef2f5;
+    --muted: #a2adb8;
+    --line: #313a43;
+    --line-strong: #56616d;
+    --accent: #ff665b;
+    --accent-dark: #e14d43;
+    --accent-soft: #3a2324;
+    --ok: #72d99d;
+    --body-overlay-start: rgba(255, 255, 255, 0.03);
+    --body-overlay-end: rgba(16, 19, 22, 0.96);
+    --button-hover: #2a2225;
+    --checker-mark: #2b333b;
+    --checker-base: #151a1f;
+    --empty-preview: #697582;
+    --row-bg: #1b2026;
+    --done-bg: #173225;
+    --failed-bg: #3a2324;
+    --shadow: 0 18px 45px rgba(0, 0, 0, 0.34);
+  }
 }
 
 * {
@@ -30,7 +65,7 @@ body {
   margin: 0;
   color: var(--text);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(246, 247, 245, 0.94)),
+    linear-gradient(180deg, var(--body-overlay-start), var(--body-overlay-end)),
     var(--bg);
 }
 
@@ -58,7 +93,7 @@ button {
 
 button:hover:not(:disabled) {
   border-color: var(--accent);
-  background: #fff7f6;
+  background: var(--button-hover);
 }
 
 button:active:not(:disabled) {
@@ -138,7 +173,7 @@ h2 {
 .drop-panel {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 230px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: 16px;
   padding: 16px;
@@ -238,17 +273,18 @@ h2 {
 
 .font-preview {
   display: grid;
-  width: 152px;
-  height: 152px;
+  width: 100%;
+  min-height: 124px;
   place-items: center;
+  padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
-    linear-gradient(45deg, #edf1f5 25%, transparent 25%),
-    linear-gradient(-45deg, #edf1f5 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #edf1f5 75%),
-    linear-gradient(-45deg, transparent 75%, #edf1f5 75%),
-    #fff;
+    linear-gradient(45deg, var(--checker-mark) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checker-mark) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker-mark) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checker-mark) 75%),
+    var(--checker-base);
   background-position:
     0 0,
     0 8px,
@@ -256,22 +292,27 @@ h2 {
     -8px 0;
   background-size: 16px 16px;
   color: var(--accent);
-  font-size: 48px;
+  font-size: 30px;
   font-weight: 800;
-  line-height: 1;
+  line-height: 1.22;
   overflow: hidden;
-  word-break: keep-all;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .font-preview.is-empty {
-  color: #aeb8c2;
+  color: var(--empty-preview);
   font-family: "Segoe UI", sans-serif;
 }
 
-.controls-panel {
+.bottom-bar {
   grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
+  align-items: start;
+  gap: 24px;
+  margin-top: 8px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -303,7 +344,7 @@ h2 {
 }
 
 .secondary-button {
-  background: #fff;
+  background: var(--panel);
   color: var(--text);
 }
 
@@ -366,7 +407,7 @@ h2 {
   min-height: 42px;
   padding: 8px 10px;
   border-bottom: 1px solid var(--line);
-  background: #fff;
+  background: var(--row-bg);
 }
 
 .queue-row:last-child {
@@ -374,7 +415,7 @@ h2 {
 }
 
 .queue-row:hover {
-  background: #fff7f6;
+  background: var(--button-hover);
 }
 
 .queue-status {
@@ -384,7 +425,7 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--muted);
-  background: #fff;
+  background: var(--panel);
   font-size: 13px;
   font-weight: 700;
   text-align: center;
@@ -398,13 +439,13 @@ h2 {
 
 .queue-status.is-done {
   color: var(--ok);
-  background: #e9f7ef;
+  background: var(--done-bg);
   border-color: rgba(23, 114, 69, 0.24);
 }
 
 .queue-status.is-failed {
   color: var(--accent-dark);
-  background: #fff0ee;
+  background: var(--failed-bg);
   border-color: rgba(211, 72, 58, 0.32);
 }
 
@@ -455,7 +496,9 @@ h2 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
-  padding: 18px 2px 0;
+  min-height: 38px;
+  align-content: center;
+  padding: 0 2px;
   font-size: 12px;
 }
 
@@ -484,7 +527,7 @@ dialog::backdrop {
     grid-template-columns: 1fr;
   }
 
-  .controls-panel,
+  .bottom-bar,
   .queue-panel {
     grid-column: auto;
     grid-row: auto;
@@ -524,17 +567,22 @@ dialog::backdrop {
     width: 100%;
   }
 
+  .bottom-bar {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
   .preview-panel {
-    grid-template-columns: 92px minmax(0, 1fr);
-    align-items: center;
+    grid-template-columns: 1fr;
+    align-items: stretch;
     min-height: 124px;
-    text-align: left;
+    text-align: center;
   }
 
   .font-preview {
-    width: 92px;
-    height: 92px;
-    font-size: 32px;
+    width: 100%;
+    min-height: 96px;
+    font-size: 24px;
   }
 
   .queue-row {

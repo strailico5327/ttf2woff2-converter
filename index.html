@@ -42,22 +42,9 @@
           </div>
 
           <div class="preview-panel" aria-label="Font preview">
-            <div class="font-preview is-empty" id="fontPreview" aria-hidden="true">Aa</div>
+            <div class="font-preview is-empty" id="fontPreview" aria-hidden="true">A quick fox jumps over a lazy dog.</div>
             <strong id="previewTitle">No font selected</strong>
             <span id="previewMeta">Add a TTF file to preview it</span>
-          </div>
-        </section>
-
-        <section class="controls-panel" aria-label="Conversion controls">
-          <div class="action-row">
-            <button class="primary-button" id="convertButton" type="button" disabled>
-              <i data-lucide="play"></i>
-              <span>Start conversion</span>
-            </button>
-            <button class="secondary-button" id="downloadAllButton" type="button" disabled>
-              <i data-lucide="archive"></i>
-              <span id="downloadLabel">Download</span>
-            </button>
           </div>
         </section>
 
@@ -91,13 +78,25 @@
             <pre id="logBox"></pre>
           </section>
         </section>
-      </section>
 
-      <footer class="legal">
-        <span>Copyright (C) 2026 strailico5327</span>
-        <span>GNU GPLv3. This program comes with no warranty.</span>
-        <span>Files are processed locally in your browser.</span>
-      </footer>
+        <section class="bottom-bar" aria-label="Conversion controls">
+          <footer class="legal">
+            <span>Copyright (C) 2026 strailico5327</span>
+            <span>GNU GPLv3. This program comes with no warranty.</span>
+            <span>Files are processed locally in your browser.</span>
+          </footer>
+          <div class="action-row">
+            <button class="primary-button" id="convertButton" type="button" disabled>
+              <i data-lucide="play"></i>
+              <span>Start conversion</span>
+            </button>
+            <button class="secondary-button" id="downloadAllButton" type="button" disabled>
+              <i data-lucide="archive"></i>
+              <span id="downloadLabel">Download</span>
+            </button>
+          </div>
+        </section>
+      </section>
     </main>
 
     <dialog id="aboutDialog">
