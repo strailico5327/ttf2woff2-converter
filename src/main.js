@@ -6,8 +6,8 @@ import {
   FolderPlus,
   Info,
   ListMinus,
+  Plus,
   Play,
-  Trash2,
   UploadCloud,
   createIcons,
 } from 'lucide';
@@ -21,8 +21,8 @@ const icons = {
   FolderPlus,
   Info,
   ListMinus,
+  Plus,
   Play,
-  Trash2,
   UploadCloud,
 };
 
@@ -33,6 +33,7 @@ const state = {
   queue: [],
   queueKeys: new Set(),
   selectedKeys: new Set(),
+  highlightedKey: null,
   results: [],
   running: false,
   previewRequestId: 0,
@@ -48,8 +49,6 @@ const elements = {
   aboutDialog: document.querySelector('#aboutDialog'),
   addFilesButton: document.querySelector('#addFilesButton'),
   addFolderButton: document.querySelector('#addFolderButton'),
-  clearLogButton: document.querySelector('#clearLogButton'),
-  clearQueueButton: document.querySelector('#clearQueueButton'),
   convertButton: document.querySelector('#convertButton'),
   downloadAllButton: document.querySelector('#downloadAllButton'),
   downloadLabel: document.querySelector('#downloadLabel'),
@@ -57,17 +56,16 @@ const elements = {
   fileInput: document.querySelector('#fileInput'),
   folderInput: document.querySelector('#folderInput'),
   fontPreview: document.querySelector('#fontPreview'),
-  logBox: document.querySelector('#logBox'),
-  previewMeta: document.querySelector('#previewMeta'),
-  previewTitle: document.querySelector('#previewTitle'),
   queueCount: document.querySelector('#queueCount'),
   queueList: document.querySelector('#queueList'),
   removeSelectedButton: document.querySelector('#removeSelectedButton'),
+  removeSelectedLabel: document.querySelector('#removeSelectedLabel'),
 };
 
 createIcons({ icons });
 log('Ready. Add .ttf files to the queue, then start conversion.');
 render();
+warmCompress();
 
 elements.aboutButton?.addEventListener('click', () => {
   elements.aboutDialog.showModal();
@@ -93,28 +91,18 @@ elements.folderInput.addEventListener('change', () => {
   elements.folderInput.value = '';
 });
 
-elements.clearQueueButton.addEventListener('click', () => {
-  if (state.running) return;
-  const count = state.queue.length;
-  state.queue = [];
-  state.queueKeys.clear();
-  state.selectedKeys.clear();
-  log(`Queue cleared. Removed ${count} file(s).`);
-  render();
-});
-
 elements.removeSelectedButton.addEventListener('click', () => {
-  if (state.running || state.selectedKeys.size === 0) return;
-  const selectedCount = state.selectedKeys.size;
+  const selectedCount = selectedQueueItems().length;
+  if (state.running || selectedCount === 0) return;
   state.queue = state.queue.filter((item) => !state.selectedKeys.has(item.key));
   state.queueKeys = new Set(state.queue.map((item) => item.key));
+  state.results = state.results.filter((result) => !state.selectedKeys.has(result.key));
+  if (!state.queueKeys.has(state.highlightedKey)) {
+    state.highlightedKey = null;
+  }
   state.selectedKeys.clear();
   log(`Removed selected item(s): ${selectedCount}`);
   render();
-});
-
-elements.clearLogButton.addEventListener('click', () => {
-  elements.logBox.textContent = '';
 });
 
 elements.convertButton.addEventListener('click', () => {
@@ -194,6 +182,7 @@ function addFiles(files) {
   }
 
   render();
+  warmCompress();
 }
 
 async function convertQueue() {
@@ -201,13 +190,32 @@ async function convertQueue() {
 
   state.running = true;
   state.results = [];
+  state.queue.forEach((item) => {
+    item.status = 'Queued';
+  });
   render();
 
   let successCount = 0;
   let failedCount = 0;
 
   log(`Starting conversion for ${state.queue.length} queued TTF file(s)...`);
-  const compress = await getCompress();
+  state.queue.forEach((item) => {
+    item.status = 'Preparing';
+  });
+  renderQueue();
+
+  let compress;
+  try {
+    compress = await getCompress();
+  } catch (error) {
+    state.queue.forEach((item) => {
+      item.status = 'Failed';
+    });
+    log(`Failed to load WOFF2 compressor: ${error.message || error}`);
+    state.running = false;
+    render();
+    return;
+  }
 
   for (const item of state.queue) {
     try {
@@ -217,6 +225,7 @@ async function convertQueue() {
       const output = await compress(source);
       const outputName = item.file.name.replace(/\.ttf$/i, '.woff2');
       const result = {
+        key: item.key,
         name: outputName,
         path: item.path.replace(/\.ttf$/i, '.woff2'),
         blob: new Blob([output], { type: 'font/woff2' }),
@@ -243,35 +252,74 @@ async function convertQueue() {
 
 function render() {
   elements.convertButton.disabled = state.running || state.queue.length === 0;
-  elements.downloadAllButton.disabled = state.results.length === 0;
-  elements.clearQueueButton.disabled = state.running || state.queue.length === 0;
-  elements.removeSelectedButton.disabled = state.running || state.selectedKeys.size === 0;
+  const selectedResults = selectedConvertedResults();
+  elements.downloadAllButton.disabled = selectedResults.length === 0;
+  const selectedCount = selectedQueueItems().length;
+  const allSelected = state.queue.length > 0 && selectedCount === state.queue.length;
+  elements.removeSelectedButton.disabled = state.running || selectedCount === 0;
+  elements.removeSelectedLabel.textContent = allSelected ? 'Clear' : 'Remove selected';
   elements.addFilesButton.disabled = state.running;
   elements.addFolderButton.disabled = state.running;
-  elements.downloadLabel.textContent = downloadButtonText();
+  elements.downloadLabel.textContent = downloadButtonText(selectedResults.length);
 
   elements.queueCount.textContent = `${state.queue.length} ${state.queue.length === 1 ? 'file' : 'files'}`;
   renderQueue();
   void updateFontPreview();
 }
 
+function selectedQueueItems() {
+  return state.queue.filter((item) => state.selectedKeys.has(item.key));
+}
+
+function selectedConvertedResults() {
+  return state.results.filter((result) => state.selectedKeys.has(result.key));
+}
+
 function renderQueue() {
+  elements.queueList.innerHTML = '';
+  elements.queueList.append(createQueueHeader());
+
   if (state.queue.length === 0) {
-    elements.queueList.innerHTML = '<div class="empty-state">Queue is empty</div>';
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'Queue is empty';
+    elements.queueList.append(empty);
     return;
   }
 
-  elements.queueList.innerHTML = '';
-
   state.queue.forEach((item) => {
-    const row = document.createElement('label');
+    const row = document.createElement('div');
     row.className = 'queue-row';
+    if (item.key === state.highlightedKey) {
+      row.classList.add('is-highlighted');
+    }
+    row.tabIndex = 0;
+    row.setAttribute('role', 'button');
+    row.setAttribute('aria-selected', String(item.key === state.highlightedKey));
+    row.addEventListener('click', () => {
+      state.highlightedKey = item.key;
+      render();
+    });
+    row.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        state.highlightedKey = item.key;
+        render();
+      }
+    });
 
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = state.selectedKeys.has(item.key);
     checkbox.disabled = state.running;
-    checkbox.addEventListener('change', () => {
+    checkbox.addEventListener('click', (event) => {
+      event.stopPropagation();
+    });
+    checkbox.addEventListener('keydown', (event) => {
+      event.stopPropagation();
+    });
+    checkbox.addEventListener('change', (event) => {
+      event.stopPropagation();
       if (checkbox.checked) {
         state.selectedKeys.add(item.key);
       } else {
@@ -292,13 +340,47 @@ function renderQueue() {
     size.className = 'file-size';
     size.textContent = formatBytes(item.file.size);
 
-    row.append(checkbox, name, status, size);
+    row.append(checkbox, status, name, size);
     elements.queueList.append(row);
   });
 }
 
+function createQueueHeader() {
+  const selectedCount = selectedQueueItems().length;
+  const allSelected = state.queue.length > 0 && selectedCount === state.queue.length;
+  const header = document.createElement('div');
+  header.className = 'queue-row queue-header';
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.checked = allSelected;
+  checkbox.indeterminate = selectedCount > 0 && !allSelected;
+  checkbox.disabled = state.running || state.queue.length === 0;
+  checkbox.setAttribute('aria-label', 'Select all');
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      state.queue.forEach((item) => state.selectedKeys.add(item.key));
+    } else {
+      state.selectedKeys.clear();
+    }
+    render();
+  });
+
+  const status = document.createElement('span');
+  status.textContent = 'Status';
+
+  const name = document.createElement('span');
+  name.textContent = 'Name';
+
+  const size = document.createElement('span');
+  size.textContent = 'File Size';
+
+  header.append(checkbox, status, name, size);
+  return header;
+}
+
 function previewQueueItem() {
-  return state.queue.find((item) => state.selectedKeys.has(item.key)) || state.queue[0] || null;
+  return state.queue.find((item) => item.key === state.highlightedKey) || null;
 }
 
 function disposePreviewFont() {
@@ -315,19 +397,17 @@ function disposePreviewFont() {
   };
 }
 
-function clearFontPreview(title = 'No font selected', meta = 'Add a TTF file to preview it') {
+function clearFontPreview() {
   state.previewRequestId += 1;
   disposePreviewFont();
   elements.fontPreview.classList.add('is-empty');
   elements.fontPreview.style.fontFamily = '';
   elements.fontPreview.textContent = PREVIEW_TEXT;
-  elements.previewTitle.textContent = title;
-  elements.previewMeta.textContent = meta;
 }
 
 async function updateFontPreview() {
   if (!('FontFace' in window)) {
-    clearFontPreview('Preview unavailable', 'This browser does not support FontFace preview.');
+    clearFontPreview();
     return;
   }
 
@@ -338,15 +418,12 @@ async function updateFontPreview() {
   }
 
   if (state.previewFont.key === item.key) {
-    elements.previewMeta.textContent = item.path;
     return;
   }
 
   const requestId = state.previewRequestId + 1;
   state.previewRequestId = requestId;
   elements.fontPreview.classList.add('is-empty');
-  elements.previewTitle.textContent = 'Loading preview';
-  elements.previewMeta.textContent = item.path;
 
   const family = `TTFPreview-${requestId}`;
   const url = URL.createObjectURL(item.file);
@@ -369,8 +446,6 @@ async function updateFontPreview() {
     elements.fontPreview.classList.remove('is-empty');
     elements.fontPreview.style.fontFamily = `"${family}", "Segoe UI", sans-serif`;
     elements.fontPreview.textContent = PREVIEW_TEXT;
-    elements.previewTitle.textContent = 'Font preview';
-    elements.previewMeta.textContent = item.path;
   } catch (error) {
     if (state.previewRequestId !== requestId) {
       URL.revokeObjectURL(url);
@@ -378,20 +453,21 @@ async function updateFontPreview() {
     }
 
     URL.revokeObjectURL(url);
-    clearFontPreview('Preview unavailable', error.message || 'The selected font could not be previewed.');
+    clearFontPreview();
   }
 }
 
 function downloadAllResults() {
-  if (state.results.length === 0) return;
+  const selectedResults = selectedConvertedResults();
+  if (selectedResults.length === 0) return;
 
-  if (state.results.length === 1) {
-    downloadBlob(state.results[0].blob, state.results[0].name);
+  if (selectedResults.length === 1) {
+    downloadBlob(selectedResults[0].blob, selectedResults[0].name);
     return;
   }
 
   const zipEntries = {};
-  const pendingReads = state.results.map(async (result) => {
+  const pendingReads = selectedResults.map(async (result) => {
     zipEntries[result.path] = new Uint8Array(await result.blob.arrayBuffer());
   });
 
@@ -403,18 +479,38 @@ function downloadAllResults() {
   });
 }
 
-function downloadButtonText() {
-  if (state.results.length === 1) return 'Download file';
-  if (state.results.length > 1) return 'Download archive';
+function downloadButtonText(downloadableCount) {
+  if (downloadableCount === 1) return 'Download file';
+  if (downloadableCount > 1) return 'Download archive';
   return 'Download';
 }
 
 async function getCompress() {
   if (!compressLoader) {
-    compressLoader = import('wawoff2/compress').then((module) => module.default);
+    compressLoader = import('wawoff2/compress')
+      .then((module) => module.default)
+      .catch((error) => {
+        compressLoader = undefined;
+        throw error;
+      });
   }
 
   return compressLoader;
+}
+
+function warmCompress() {
+  const preload = () => {
+    void getCompress().catch((error) => {
+      console.warn('WOFF2 compressor preload failed:', error);
+    });
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(preload, { timeout: 1200 });
+    return;
+  }
+
+  window.setTimeout(preload, 400);
 }
 
 function downloadBlob(blob, filename) {
@@ -493,11 +589,10 @@ function formatBytes(bytes) {
 function statusClass(status) {
   if (status === 'Done') return 'is-done';
   if (status === 'Failed') return 'is-failed';
-  if (status === 'Converting') return 'is-running';
+  if (status === 'Converting' || status === 'Preparing') return 'is-running';
   return '';
 }
 
 function log(message) {
-  elements.logBox.textContent += `${message}\n`;
-  elements.logBox.scrollTop = elements.logBox.scrollHeight;
+  console.info(message);
 }

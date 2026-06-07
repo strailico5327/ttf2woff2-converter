@@ -25,10 +25,11 @@
             <input id="fileInput" type="file" accept=".ttf,font/ttf" multiple />
             <input id="folderInput" type="file" accept=".ttf,font/ttf" multiple webkitdirectory />
             <div class="drop-copy">
-              <span class="drop-symbol" aria-hidden="true">+</span>
-              <h2 id="dropTitle">Drop TTF files</h2>
-              <p>Choose files, add a folder, or drop fonts here. Conversion runs locally.</p>
-              <div class="drop-actions" aria-label="File actions">
+              <span class="drop-symbol" aria-hidden="true">
+              <i data-lucide="plus"></i>
+            </span>
+            <h2 id="dropTitle">Drop TTF files</h2>
+            <div class="drop-actions" aria-label="File actions">
                 <button id="addFilesButton" class="secondary-button" type="button">
                   <i data-lucide="file-plus-2"></i>
                   <span>Add files</span>
@@ -43,8 +44,6 @@
 
           <div class="preview-panel" aria-label="Font preview">
             <div class="font-preview is-empty" id="fontPreview" aria-hidden="true">A quick fox jumps over a lazy dog.</div>
-            <strong id="previewTitle">No font selected</strong>
-            <span id="previewMeta">Add a TTF file to preview it</span>
           </div>
         </section>
 
@@ -57,45 +56,31 @@
             <div class="queue-actions">
               <button id="removeSelectedButton" class="secondary-button" type="button">
                 <i data-lucide="list-minus"></i>
-                <span>Remove selected</span>
-              </button>
-              <button id="clearQueueButton" class="secondary-button" type="button">
-                <i data-lucide="trash-2"></i>
-                <span>Clear queue</span>
+                <span id="removeSelectedLabel">Remove selected</span>
               </button>
             </div>
           </div>
           <div class="queue-list" id="queueList" aria-live="polite"></div>
 
-          <section class="log-panel" aria-labelledby="logTitle">
-            <div class="panel-head">
-              <h2 id="logTitle">Log</h2>
-              <button class="secondary-button" id="clearLogButton" type="button">
-                <i data-lucide="eraser"></i>
-                <span>Clear log</span>
+          <section class="bottom-bar" aria-label="Conversion controls">
+            <div class="action-row">
+              <button class="primary-button" id="convertButton" type="button" disabled>
+                <i data-lucide="play"></i>
+                <span>Start conversion</span>
+              </button>
+              <button class="secondary-button" id="downloadAllButton" type="button" disabled>
+                <i data-lucide="archive"></i>
+                <span id="downloadLabel">Download</span>
               </button>
             </div>
-            <pre id="logBox"></pre>
           </section>
         </section>
 
-        <section class="bottom-bar" aria-label="Conversion controls">
-          <footer class="legal">
-            <span>Copyright (C) 2026 strailico5327</span>
-            <span>GNU GPLv3. This program comes with no warranty.</span>
-            <span>Files are processed locally in your browser.</span>
-          </footer>
-          <div class="action-row">
-            <button class="primary-button" id="convertButton" type="button" disabled>
-              <i data-lucide="play"></i>
-              <span>Start conversion</span>
-            </button>
-            <button class="secondary-button" id="downloadAllButton" type="button" disabled>
-              <i data-lucide="archive"></i>
-              <span id="downloadLabel">Download</span>
-            </button>
-          </div>
-        </section>
+        <footer class="legal">
+          <span>Copyright (C) 2026 strailico5327</span>
+          <span>GNU GPLv3. This program comes with no warranty.</span>
+          <span>Files are processed locally in your browser.</span>
+        </footer>
       </section>
     </main>
 
